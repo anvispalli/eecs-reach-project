@@ -47,7 +47,7 @@ int scoreFloor(const BuildingState& buildingState, int floorNum, int elevFloor) 
         if (travelTime >= ticksUntilExplosion) {
             continue;
         }
-
+        // calculates total anger by the time of arrival of elevator
         int angerOnArrival = angerLevel + (travelTime / TICKS_PER_ANGER_INCREASE);
         points += MAX_ANGER - angerOnArrival;
     }
