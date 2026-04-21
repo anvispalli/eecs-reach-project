@@ -52,6 +52,16 @@ int getExplosionTime(const Person& p) {
     return ticks;
 }
 
+int getTicksToFloor(int currentFloor, int targetFloor) {
+    return abs(targetFloor - currentFloor);
+}
+
+bool canSavePerson(const Person& p, int elevatorFloor) {
+    int ticksToReach = getTicksToFloor(elevatorFloor, p.getCurrentFloor());
+    int ticksUntilExplosion = getExplosionTime(p);
+    return ticksToReach < ticksUntilExplosion;
+}
+
 string getDominantDirection(const Floor& floor) {
     string direction = "";
     int upAngerSum = 0;
