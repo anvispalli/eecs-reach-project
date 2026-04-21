@@ -12,7 +12,7 @@
 
 #include "AI.h"
 #include <cassert>
-
+#include <cmath>
 // This file is used only in the Reach, not the Core.
 // You do not need to make any changes to this file for the Core
 
@@ -25,17 +25,24 @@ string getAIPickupList(const Move& move, const BuildingState& buildingState,
     return "";
 }
 
-int floorPriority(const Floor& floor, int floorNum, int elevatorFloor) {
-    int score = 0;
-    int time = abs(floorNum - elevatorFloor);
-    for (int i = 0; i < floor.getNumPeople(); i++) {    
-        int angerLevel = floor.getPersonByIndex(i).person.getAngerLevel();
-        if (time < ((MAX_ANGER - angerLevel) * TICKS_PER_ANGER_INCREASE)) {
-            score += MAX_ANGER - (angerLevel+(time / TICKS_PER_ANGER_INCREASE));
+int calculateFloorPriority(const Floor& floor, int floorNum, int elevatorFloor) {
+    int priority = 0;
+    int travelTime = abs(floorNum - elevatorFloor);
+    for (int i = 0; i < floor.getNumPeople(); i++) {
+        int angerLevel = floor.getPersonByIndex(i).getAngerLevel();
+        //or should i call the other helper here?
+        int ticksUntilExplosion = (MAX_ANGER - angerLevel) * TICKS_PER_ANGER_INCREASE;
+        if (travelTime < ticksUntilExplosion) {
+            if (ticksUntilExplosion - travelTime <= TICKS_PER_ANGER_INCREASE) {
+                priority += angerLevel + abs(POINTS_LOST_PER_EXPLOSION);
+            } else {
+                priority += angerLevel;
+            }
         }
     }
-    return score;
+    return priority;
 }
+
 
 int getExplosionTime(const Person& p) {
     int angerLevel = p.getAngerLevel();
