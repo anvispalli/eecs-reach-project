@@ -25,6 +25,19 @@ string getAIPickupList(const Move& move, const BuildingState& buildingState,
     return "";
 }
 
+int floorPriority(const Floor& floor, int floorNum, int elevatorFloor) {
+    int score = 0;
+    int time = abs(floorNum - elevatorFloor);
+    for (int i = 0; i < floor.getNumPeople(); i++) {    
+        Person person = floor.getPersonByIndex(i);
+        int angerLevel = person.getAngerLevel();
+        if (time < ((MAX_ANGER - angerLevel) * TICKS_PER_ANGER_INCREASE)) {
+            score += MAX_ANGER - (angerLevel+(time / TICKS_PER_ANGER_INCREASE));
+        }
+    }
+    return score;
+}
+
 int getExplosionTime(const Person& p) {
     int angerLevel = p.getAngerLevel();
     int numFromMax = MAX_ANGER - angerLevel;
