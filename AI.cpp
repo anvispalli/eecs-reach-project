@@ -125,7 +125,42 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
 }
 
 string getAIMoveString(const BuildingState& buildingState) {
-    return "";
+    int bestElevator = 0;
+    int bestDistance = 100000;  // large number
+    int bestTargetFloor = 0;
+
+    // Find best elevator
+    for (int e = 0; e < NUM_ELEVATORS; e++) {
+
+        int currentFloor = buildingState.elevators[e].currentFloor;
+        int targetFloor = getBestFloor(buildingState, currentFloor);
+
+        int distance = getTicksToFloor(currentFloor, targetFloor);
+
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestElevator = e;
+            bestTargetFloor = targetFloor;
+        }
+    }
+
+    int currentFloor = buildingState.elevators[bestElevator].currentFloor;
+
+    // Pickup if possible
+    if (buildingState.floors[currentFloor].numPeople > 0) {
+        return "e" + to_string(bestElevator) + " p";
+    }
+
+    // Move toward target
+    if (bestTargetFloor > currentFloor) {
+        return "e" + to_string(bestElevator) + " u";
+    }
+    else if (bestTargetFloor < currentFloor) {
+        return "e" + to_string(bestElevator) + " d";
+    }
+
+    // fallback
+    return "e" + to_string(bestElevator) + " p";
 }
 
 string getAIPickupList(const Move& move, const BuildingState& buildingState, 
