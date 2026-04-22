@@ -11,6 +11,7 @@
  */
 
 #include "AI.h"
+#include "BuildingState.h"
 #include <cassert>
 #include <cmath>
 // This file is used only in the Reach, not the Core.
