@@ -120,7 +120,7 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
             
             int distance = abs(elevatorFloor - i);
             
-            double score = static_cast<double>(priority) / (1 + 0.5 * distance);
+            double score = static_cast<double>(priority) / (1 + distance);
             
             if (score > bestScore) {
                 bestScore = score;
@@ -132,38 +132,24 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
 }
 
 string getAIMoveString(const BuildingState& buildingState) {
-    int bestElevator = 0;
-    int bestDistance = 100000;  // large number
-    int bestTargetFloor = 0;
-
-    // Find best elevator
     for (int e = 0; e < NUM_ELEVATORS; e++) {
-        // Skip elevators in motion
+        // Checks if elevator can recieve command
         if (!buildingState.elevators[e].isServicing) {
+                
             int currentFloor = buildingState.elevators[e].currentFloor;
             int targetFloor = getBestFloor(buildingState, currentFloor);
-            int distance = getTicksToFloor(currentFloor, targetFloor);
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                bestElevator = e;
-                bestTargetFloor = targetFloor;
+
+            // Sees if people are on best floor
+            if (buildingState.floors[currentFloor].numPeople > 0) {
+                return "e" + to_string(e) + "p";
+            }
+
+            if (targetFloor != -1 && targetFloor != currentFloor) {
+                return "e" + to_string(e) + "f" + to_string(targetFloor);
             }
         }
     }
-
-    int currentFloor = buildingState.elevators[bestElevator].currentFloor;
-
-    // Pickup if possible
-    if (buildingState.floors[currentFloor].numPeople > 0) {
-        return "e" + to_string(bestElevator) + "p";
-    }
-
-    // Move toward target
-    if (bestTargetFloor != currentFloor) {
-        return "e" + to_string(bestElevator) + "f" + to_string(bestTargetFloor);
-    }
-
-    // fallback
+    // Passes if no elevator can move
     return "";
 }
 
