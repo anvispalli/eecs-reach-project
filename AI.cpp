@@ -88,7 +88,7 @@ string getDominantDirection(const Floor& floor) {
 
 int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
     
-    int bestEmergencyFloor = -1; // to be changed
+    int bestEmergencyFloor = -1; // to be changed by later code
     double bestEmergencyScore = -1; // to be changed
     
     // PASS 1: checking for people about to explode
