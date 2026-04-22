@@ -20,8 +20,8 @@
 int calculateFloorPriority(const _Floor& floor, int floorNum, int elevatorFloor) {
     int priority = 0;
     int travelTime = abs(floorNum - elevatorFloor);
-    for (int i = 0; i < floor.getNumPeople(); i++) {
-        int angerLevel = floor.getPersonByIndex(i).getAngerLevel();
+    for (int i = 0; i < floor.numPeople; i++) {
+        int angerLevel = floor.people[i].angerLevel;
         //or should i call the other helper here?
         int ticksUntilExplosion = (MAX_ANGER - angerLevel) * TICKS_PER_ANGER_INCREASE;
         if (travelTime < ticksUntilExplosion) {
