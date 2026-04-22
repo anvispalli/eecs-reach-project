@@ -120,7 +120,7 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
             
             int distance = abs(elevatorFloor - i);
             
-            double score = static_cast<double>(priority) / (1 + distance);
+            double score = static_cast<double>(priority) / (1 + 0.5 * distance);
             
             if (score > bestScore) {
                 bestScore = score;
