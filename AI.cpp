@@ -28,7 +28,7 @@ int calculateFloorPriority(const _Floor& floor, int floorNum, int elevatorFloor)
         int angerLevel = floor.people[i].angerLevel;
         //or should i call the other helper here?
         int ticksUntilExplosion = (MAX_ANGER - angerLevel) * TICKS_PER_ANGER_INCREASE;
-
+        
         // only count ppl you can reach in time
         if (travelTime < ticksUntilExplosion) {
             
@@ -39,10 +39,12 @@ int calculateFloorPriority(const _Floor& floor, int floorNum, int elevatorFloor)
                 priority += angerLevel;
             }
         }
+        else {
+            priority += angerLevel;
+        }
     }
     return priority;
 }
-
 
 int getExplosionTime(const _Person& p) {
     int numFromMax = MAX_ANGER - p.angerLevel;
@@ -136,16 +138,16 @@ string getAIMoveString(const BuildingState& buildingState) {
 
     // Find best elevator
     for (int e = 0; e < NUM_ELEVATORS; e++) {
-
-        int currentFloor = buildingState.elevators[e].currentFloor;
-        int targetFloor = getBestFloor(buildingState, currentFloor);
-
-        int distance = getTicksToFloor(currentFloor, targetFloor);
-
-        if (distance < bestDistance) {
-            bestDistance = distance;
-            bestElevator = e;
-            bestTargetFloor = targetFloor;
+        // Skip elevators in motion
+        if (!buildingState.elevators[e].isServicing) {
+            int currentFloor = buildingState.elevators[e].currentFloor;
+            int targetFloor = getBestFloor(buildingState, currentFloor);
+            int distance = getTicksToFloor(currentFloor, targetFloor);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestElevator = e;
+                bestTargetFloor = targetFloor;
+            }
         }
     }
 
@@ -157,30 +159,32 @@ string getAIMoveString(const BuildingState& buildingState) {
     }
 
     // Move toward target
-    if (bestTargetFloor > currentFloor) {
-        return "e" + to_string(bestElevator) + "u";
-    }
-    else if (bestTargetFloor < currentFloor) {
-        return "e" + to_string(bestElevator) + "d";
+    if (bestTargetFloor != currentFloor) {
+        return "e" + to_string(bestElevator) + "f" + to_string(bestTargetFloor);
     }
 
     // fallback
-    return "e" + to_string(bestElevator) + "p";
+    return "";
 }
 
-string getAIPickupList(const Move& move, const BuildingState& buildingState, const Floor& floorToPickup) {
+string getAIPickupList(const Move& move, const BuildingState& buildingState,
+                       const Floor& floorToPickup) {
     string pickupList = "";
     string dominantDir = getDominantDirection(floorToPickup);
 
-    for (int i = 0; i < floorToPickup.getNumPeople() && pickupList.size() < ELEVATOR_CAPACITY; i++) {
+    int count = 0;
+    
+    for (int i = 0; i < floorToPickup.getNumPeople() && count < ELEVATOR_CAPACITY; i++) {
         Person p = floorToPickup.getPersonByIndex(i);
         bool goingUp = p.getTargetFloor() > p.getCurrentFloor();
 
         if (dominantDir == "up" && goingUp) {
             pickupList += to_string(i);
+            count++;
         }
         else if (dominantDir == "down" && !goingUp) {
             pickupList += to_string(i);
+            count++;
         }
     }
     return pickupList;
