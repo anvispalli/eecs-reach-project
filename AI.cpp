@@ -12,22 +12,30 @@
 
 #include "AI.h"
 #include "BuildingState.h"
+#include "Building.h"
+#include "Person.h"
 #include <cassert>
-#include <cmath>
+#include <string>
+
 // This file is used only in the Reach, not the Core.
 // You do not need to make any changes to this file for the Core
 
 int calculateFloorPriority(const _Floor& floor, int floorNum, int elevatorFloor) {
     int priority = 0;
     int travelTime = abs(floorNum - elevatorFloor);
+    
     for (int i = 0; i < floor.numPeople; i++) {
         int angerLevel = floor.people[i].angerLevel;
         //or should i call the other helper here?
         int ticksUntilExplosion = (MAX_ANGER - angerLevel) * TICKS_PER_ANGER_INCREASE;
+
+        // only count ppl you can reach in time
         if (travelTime < ticksUntilExplosion) {
+            
             if (ticksUntilExplosion - travelTime <= TICKS_PER_ANGER_INCREASE) {
                 priority += angerLevel + abs(POINTS_LOST_PER_EXPLOSION);
-            } else {
+            }
+            else {
                 priority += angerLevel;
             }
         }
@@ -47,7 +55,7 @@ int getTicksToFloor(int currentFloor, int targetFloor) {
     return abs(targetFloor - currentFloor);
 }
 
-string getDominantDirection(const _Floor& floor) {
+string getDominantDirection(const Floor& floor) {
     string direction = "";
     int upAngerSum = 0;
     int downAngerSum = 0;
@@ -106,14 +114,11 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
     for (int i = 0; i < NUM_FLOORS; i++) {
         if (buildingState.floors[i].numPeople > 0) {
 
-            int totalAnger = 0;
+            int priority = calculateFloorPriority(buildingState.floors[i], i, elevatorFloor);
             
-            for (int j = 0; j < buildingState.floors[i].numPeople; j++) {
-                totalAnger += buildingState.floors[i].people[j].angerLevel;
-            }
             int distance = abs(elevatorFloor - i);
             
-            double score = static_cast<double>(totalAnger) / (1 + distance);
+            double score = static_cast<double>(priority) / (1 + distance);
             
             if (score > bestScore) {
                 bestScore = score;
@@ -166,20 +171,21 @@ string getAIMoveString(const BuildingState& buildingState) {
 string getAIPickupList(const Move& move, const BuildingState& buildingState,
                        const Floor& floorToPickup) {
     string pickupList = "";
-    int elevatorFloor = buildingState.elevators[move.getElevatorId()].currentFloor;
-    bool goingUpDir = floorToPickup.getHasUpRequest() && 
-                      (!floorToPickup.getHasDownRequest() || 
-                       floorToPickup.getPersonByIndex(0).getTargetFloor() > elevatorFloor);
+    string dominantDir = getDominantDirection(floorToPickup);
 
-    for (int i = 0; i < floorToPickup.getNumPeople() && pickupList.size() < ELEVATOR_CAPACITY; i++) {
+    int count = 0;
+    
+    for (int i = 0; i < floorToPickup.getNumPeople() && count < ELEVATOR_CAPACITY; i++) {
         Person p = floorToPickup.getPersonByIndex(i);
         bool goingUp = p.getTargetFloor() > p.getCurrentFloor();
 
-        if (goingUpDir && goingUp) {
-            pickupList += to_string(i);
+        if (dominantDir == "up" && goingUp) {
+            pickupList += to_string(i) + " ";
+            count++;
         }
-        else if (!goingUpDir && !goingUp) {
-            pickupList += to_string(i);
+        else if (dominantDir == "down" && !goingUp) {
+            pickupList += to_string(i) + " ";
+            count++;
         }
     }
     return pickupList;
