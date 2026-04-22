@@ -133,15 +133,19 @@ string getAIPickupList(const Move& move, const BuildingState& buildingState,
     string pickupList = "";
     string dominantDir = getDominantDirection(floorToPickup);
 
-    for (int i = 0; i < floorToPickup.getNumPeople() && pickupList.size() < ELEVATOR_CAPACITY; i++) {
+    int count = 0;
+    
+    for (int i = 0; i < floorToPickup.getNumPeople() && count < ELEVATOR_CAPACITY; i++) {
         Person p = floorToPickup.getPersonByIndex(i);
         bool goingUp = p.getTargetFloor() > p.getCurrentFloor();
 
         if (dominantDir == "up" && goingUp) {
-            pickupList += to_string(i);
+            pickupList += to_string() + " ";
+            count++;
         }
         else if (dominantDir == "down" && !goingUp) {
-            pickupList += to_string(i);
+            pickupList += to_string(i) + " ";
+            count++;
         }
     }
     return pickupList;
