@@ -153,19 +153,19 @@ string getAIMoveString(const BuildingState& buildingState) {
 
     // Pickup if possible
     if (buildingState.floors[currentFloor].numPeople > 0) {
-        return "e" + to_string(bestElevator) + " p";
+        return "e" + to_string(bestElevator) + "p";
     }
 
     // Move toward target
     if (bestTargetFloor > currentFloor) {
-        return "e" + to_string(bestElevator) + " u";
+        return "e" + to_string(bestElevator) + "u";
     }
     else if (bestTargetFloor < currentFloor) {
-        return "e" + to_string(bestElevator) + " d";
+        return "e" + to_string(bestElevator) + "d";
     }
 
     // fallback
-    return "e" + to_string(bestElevator) + " p";
+    return "e" + to_string(bestElevator) + "p";
 }
 
 string getAIPickupList(const Move& move, const BuildingState& buildingState, const Floor& floorToPickup) {
