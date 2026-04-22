@@ -17,15 +17,6 @@
 // This file is used only in the Reach, not the Core.
 // You do not need to make any changes to this file for the Core
 
-string getAIMoveString(const BuildingState& buildingState) {
-    return "";
-}
-
-string getAIPickupList(const Move& move, const BuildingState& buildingState, 
-                       const Floor& floorToPickup) {
-    return "";
-}
-
 int calculateFloorPriority(const Floor& floor, int floorNum, int elevatorFloor) {
     int priority = 0;
     int travelTime = abs(floorNum - elevatorFloor);
@@ -136,5 +127,28 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
         }
     }
     return bestFloor;
+}
+
+string getAIMoveString(const BuildingState& buildingState) {
+    return "";
+}
+
+string getAIPickupList(const Move& move, const BuildingState& buildingState, 
+                       const Floor& floorToPickup) {
+    string pickupList = "";
+    string dominantDir = getDominantDirection(floorToPickup);
+
+    for (int i = 0; i < floorToPickup.getNumPeople() && pickupList.size() < ELEVATOR_CAPACITY; i++) {
+        Person p = floorToPickup.getPersonByIndex(i);
+        bool goingUp = p.getTargetFloor() > p.getCurrentFloor();
+
+        if (dominantDir == "up" && goingUp) {
+            pickupList += to_string(i);
+        }
+        else if (dominantDir == "down" && !goingUp) {
+            pickupList += to_string(i);
+        }
+    }
+    return pickupList;
 }
 
