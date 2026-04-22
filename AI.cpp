@@ -17,7 +17,7 @@
 // This file is used only in the Reach, not the Core.
 // You do not need to make any changes to this file for the Core
 
-int calculateFloorPriority(const Floor& floor, int floorNum, int elevatorFloor) {
+int calculateFloorPriority(const _Floor& floor, int floorNum, int elevatorFloor) {
     int priority = 0;
     int travelTime = abs(floorNum - elevatorFloor);
     for (int i = 0; i < floor.getNumPeople(); i++) {
@@ -36,10 +36,9 @@ int calculateFloorPriority(const Floor& floor, int floorNum, int elevatorFloor) 
 }
 
 
-int getExplosionTime(const Person& p) {
-    int angerLevel = p.getAngerLevel();
-    int numFromMax = MAX_ANGER - angerLevel;
-    int ticks = numFromMax * TICKS_PER_ANGER_INCREASE;
+int getExplosionTime(const _Person& p) {
+    int numFromMax = MAX_ANGER - p.angerLevel;
+    int ticks = (numFromMax * TICKS_PER_ANGER_INCREASE);
     
     return ticks;
 }
@@ -48,13 +47,7 @@ int getTicksToFloor(int currentFloor, int targetFloor) {
     return abs(targetFloor - currentFloor);
 }
 
-bool canSavePerson(const Person& p, int elevatorFloor) {
-    int ticksToReach = getTicksToFloor(elevatorFloor, p.getCurrentFloor());
-    int ticksUntilExplosion = getExplosionTime(p);
-    return ticksToReach < ticksUntilExplosion;
-}
-
-string getDominantDirection(const Floor& floor) {
+string getDominantDirection(const _Floor& floor) {
     string direction = "";
     int upAngerSum = 0;
     int downAngerSum = 0;
@@ -85,14 +78,14 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
     
     // PASS 1: checking for people about to explode
     for (int f = 0; f < NUM_FLOORS; f++) {
-        for (int p = 0; p < buildingState.floors[f].numPeople - 1 ; p++) {
+        for (int p = 0; p < buildingState.floors[f].numPeople; p++) {
             
-            int ticksToFloor = getTicksToFloor(); // should be impemented elsewhere
+            int ticksToFloor = getTicksToFloor(elevatorFloor, f); // should be impemented elsewhere
             
             _Person person = buildingState.floors[f].people[p];
             int ticksUntilExplosion = getExplosionTime(person); // should be implemented elsewhere
             
-            if (ticksToFloor <= ticksUntilExplosion) {
+            if (ticksToFloor < ticksUntilExplosion) {
                 double urgency = 1.0 / (ticksUntilExplosion + 1); // + 1 incase it's 0
                 
                 if (urgency > bestEmergencyScore) { // should always be true first execution
@@ -109,9 +102,11 @@ int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
     int bestFloor = -1;
     double bestScore = -1;
     
-    int totalAnger = 0;
+    
     for (int i = 0; i < NUM_FLOORS; i++) {
         if (buildingState.floors[i].numPeople > 0) {
+
+            int totalAnger = 0;
             
             for (int j = 0; j < buildingState.floors[i].numPeople; j++) {
                 totalAnger += buildingState.floors[i].people[j].angerLevel;
