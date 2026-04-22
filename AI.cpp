@@ -85,3 +85,55 @@ string getDominantDirection(const Floor& floor) {
     
     return direction;
 }
+
+int getBestFloor(const BuildingState& buildingState, int elevatorFloor) {
+    
+    int bestEmergencyFloor = -1; // to be changed
+    double bestEmergencyScore = -1; // to be changed
+    
+    // PASS 1: checking for people about to explode
+    for (int f = 0; f < NUM_FLOORS; f++) {
+        for (int p = 0; p < buildingState.floors[f].numPeople - 1 ; p++) {
+            
+            int ticksToFloor = getTicksToFloor(); // should be impemented elsewhere
+            
+            _Person person = buildingState.floors[f].people[p];
+            int ticksUntilExplosion = getExplosionTime(person); // should be implemented elsewhere
+            
+            if (ticksToFloor <= ticksUntilExplosion) {
+                double urgency = 1.0 / (ticksUntilExplosion + 1); // + 1 incase it's 0
+                
+                if (urgency > bestEmergencyScore) { // should always be true first execution
+                    bestEmergencyFloor = f;
+                    bestEmergencyScore = urgency;
+                }
+            }
+        }
+    }
+    if (bestEmergencyFloor != -1) {
+        return bestEmergencyFloor;
+    }
+    // PASS 2: normal urgency scoring
+    int bestFloor = -1;
+    double bestScore = -1;
+    
+    int totalAnger = 0;
+    for (int i = 0; i < NUM_FLOORS; i++) {
+        if (buildingState.floors[i].numPeople > 0) {
+            
+            for (int j = 0; j < buildingState.floors[i].numPeople; j++) {
+                totalAnger += buildingState.floors[i].people[j].angerLevel;
+            }
+            int distance = abs(elevatorFloor - i);
+            
+            double score = static_cast<double>(totalAnger) / (1 + distance);
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestFloor = i;
+            }
+        }
+    }
+    return bestFloor;
+}
+
