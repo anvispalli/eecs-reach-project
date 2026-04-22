@@ -168,24 +168,19 @@ string getAIMoveString(const BuildingState& buildingState) {
     return "e" + to_string(bestElevator) + " p";
 }
 
-string getAIPickupList(const Move& move, const BuildingState& buildingState,
-                       const Floor& floorToPickup) {
+string getAIPickupList(const Move& move, const BuildingState& buildingState, const Floor& floorToPickup) {
     string pickupList = "";
     string dominantDir = getDominantDirection(floorToPickup);
 
-    int count = 0;
-    
-    for (int i = 0; i < floorToPickup.getNumPeople() && count < ELEVATOR_CAPACITY; i++) {
+    for (int i = 0; i < floorToPickup.getNumPeople() && pickupList.size() < ELEVATOR_CAPACITY; i++) {
         Person p = floorToPickup.getPersonByIndex(i);
         bool goingUp = p.getTargetFloor() > p.getCurrentFloor();
 
         if (dominantDir == "up" && goingUp) {
-            pickupList += to_string(i) + " ";
-            count++;
+            pickupList += to_string(i);
         }
         else if (dominantDir == "down" && !goingUp) {
-            pickupList += to_string(i) + " ";
-            count++;
+            pickupList += to_string(i);
         }
     }
     return pickupList;
